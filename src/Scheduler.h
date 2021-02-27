@@ -54,7 +54,8 @@ Current Row Policies:
 #include <list>
 #include <functional>
 #include <cassert>
-extern int g_num_cycles; 
+#include <set>
+extern uint64_t g_num_cycles; 
 using namespace std;
 
 namespace ramulator
@@ -71,15 +72,14 @@ public:
 
     enum class Type {
         FCFS, FRFCFS, FRFCFS_Cap, FRFCFS_PriorHit, BLISS, MAX
-    } type = Type::FRFCFS_Cap; //Change this line to change scheduling policy
+    } type = Type::BLISS; //Change this line to change scheduling policy
 
-    long cap = 16; //Change this line to change cap
-
+    long cap = 16; //Change  line to change cap
     //BLISS variables/constants
     int last_req_id = -1; //coreid of last recieved request, for BLISS policy
     int num_consec_reqs = 0; //number of consecutive requests from last_req_id
     int blacklist_thresh = 4; //number of consecutive requests before coreid is blacklisted
-    set<int> > blacklist_ids; //set of coreids that are blacklisted due to reaching the threshold
+    std::set<int> blacklist_ids; //set of coreids that are blacklisted due to reaching the threshold
     int reset_time = 10000; //number of cycles before the blacklist set is cleared
     
     Scheduler(Controller<T>* ctrl) : ctrl(ctrl) {}

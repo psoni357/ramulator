@@ -33,7 +33,7 @@ using namespace std;
 using namespace ramulator;
 
 bool ramulator::warmup_complete = false;
-int g_num_cycles = 0; //global to store number of cycles processed - for BLISS scheduler refressh
+uint64_t g_num_cycles = 0; //global to store number of cycles processed - for BLISS scheduler refressh
 template<typename T>
 void run_dramtrace(const Config& configs, Memory<T, Controller>& memory, const char* tracename) {
 
