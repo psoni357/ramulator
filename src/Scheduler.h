@@ -54,7 +54,7 @@ Current Row Policies:
 #include <list>
 #include <functional>
 #include <cassert>
-
+extern int g_num_cycles; 
 using namespace std;
 
 namespace ramulator
@@ -70,11 +70,18 @@ public:
     Controller<T>* ctrl;
 
     enum class Type {
-        FCFS, FRFCFS, FRFCFS_Cap, FRFCFS_PriorHit, MAX
+        FCFS, FRFCFS, FRFCFS_Cap, FRFCFS_PriorHit, BLISS, MAX
     } type = Type::FRFCFS_Cap; //Change this line to change scheduling policy
 
     long cap = 16; //Change this line to change cap
 
+    //BLISS variables/constants
+    int last_req_id = -1; //coreid of last recieved request, for BLISS policy
+    int num_consec_reqs = 0; //number of consecutive requests from last_req_id
+    int blacklist_thresh = 4; //number of consecutive requests before coreid is blacklisted
+    set<int> > blacklist_ids; //set of coreids that are blacklisted due to reaching the threshold
+    int reset_time = 10000; //number of cycles before the blacklist set is cleared
+    
     Scheduler(Controller<T>* ctrl) : ctrl(ctrl) {}
 
     list<Request>::iterator get_head(list<Request>& q)
@@ -156,6 +163,25 @@ public:
 
 //Compare functions for each memory schedulers
 private:
+    void update_blacklist_and_count(int req_coreid){
+        //Given a to-be-returned req core id,
+        //updates the blacklist, last_req_id, and num_consec_reqs
+
+        //First check if consecutive, if so update, else reset. 
+        this->num_consec_reqs = (req_coreid == this->last_req_id) ? this->num_consec_reqs + 1 : 0; 
+        if(this->num_consec_reqs == 0){
+            //reset
+            this->last_req_id = req_coreid; 
+        }
+
+        //check if have to blacklist according to blacklist_thresh
+        if(num_consec_reqs > blacklist_thresh){
+            //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
+            //(if it's not already blacklisted)
+            blacklist_ids.insert(req_coreid);
+        }
+        
+    }
     typedef list<Request>::iterator ReqIter;
     function<ReqIter(ReqIter, ReqIter)> compare[int(Type::MAX)] = {
         // FCFS
@@ -202,7 +228,53 @@ private:
             }
 
             if (req1->arrive <= req2->arrive) return req1;
-            return req2;}
+            return req2;},
+        //BLISS
+        [this] (ReqIter req1, ReqIter req2) {
+            //First check if blacklist needs to be cleared according g_num_cycles and reset_time
+            if((g_num_cycles % this->reset_time) == 0){
+                this->blacklist_ids.clear(); 
+            }
+            //Priority 1: Prioritize non-blacklisted
+            //Check if either request is blacklisted
+            bool req1_blacklisted = (this->blacklist_ids.count(req1->coreid) != 0);
+            bool req2_blacklisted = (this->blacklist_ids.count(req2->coreid) != 0);
+            
+            if(req1_blacklisted ^ req2_blacklisted){
+                if(req1_blacklisted){
+                    update_blacklist_and_count(req2->coreid);
+                    return req2;
+                }
+                else{
+                    update_blacklist_and_count(req1->coreid);
+                    return req1;
+                }
+            }
+            //Priority 2: Prioritize row-hit over non-hit
+            bool req1_row_hit = this->ctrl->is_row_hit(req1);
+            bool req2_row_hit = this->ctrl->is_row_hit(req2);
+
+            if(req1_row_hit ^ req2_row_hit){
+                if(req1_row_hit){
+                    update_blacklist_and_count(req1->coreid);
+                    return req1;
+                }
+                else{
+                    update_blacklist_and_count(req2->coreid);
+                    return req2; 
+                }
+            }
+
+            //Priority 3: Prioritize older requests over younger requests 
+            if (req1->arrive <= req2->arrive) {
+                update_blacklist_and_count(req1->coreid);
+                return req1; 
+            } 
+            else{
+                update_blacklist_and_count(req2->coreid);
+                return req2;
+            }
+        }
     };
 };
 

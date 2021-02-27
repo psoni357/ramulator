@@ -33,7 +33,7 @@ using namespace std;
 using namespace ramulator;
 
 bool ramulator::warmup_complete = false;
-
+int g_num_cycles = 0; //global to store number of cycles processed - for BLISS scheduler refressh
 template<typename T>
 void run_dramtrace(const Config& configs, Memory<T, Controller>& memory, const char* tracename) {
 
@@ -124,6 +124,7 @@ void run_cputrace(const Config& configs, Memory<T, Controller>& memory, const st
         if (((i % tick_mult) % mem_tick) == 0) { // When the CPU is ticked cpu_tick times,
                                                  // the memory controller should be ticked mem_tick times
             proc.tick();
+            g_num_cycles++; 
             Stats::curTick++; // processor clock, global, for Statistics
 
             if (configs.calc_weighted_speedup()) {
