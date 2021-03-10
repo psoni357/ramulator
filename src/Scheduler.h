@@ -81,6 +81,8 @@ public:
     int blacklist_thresh = 4; //number of consecutive requests before coreid is blacklisted
     std::set<int> blacklist_ids; //set of coreids that are blacklisted due to reaching the threshold
     int reset_time = 10000; //number of cycles before the blacklist set is cleared
+
+    u_int64_t last_cycle = 0; //last cycle seen by scheduler - compare to see if difference is > reset_time
     
     Scheduler(Controller<T>* ctrl) : ctrl(ctrl) {}
 
@@ -175,10 +177,14 @@ private:
         }
 
         //check if have to blacklist according to blacklist_thresh
-        if(num_consec_reqs > blacklist_thresh){
+        if(num_consec_reqs > blacklist_thresh && g_num_cycles!=0){
             //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
             //(if it's not already blacklisted)
             blacklist_ids.insert(req_coreid);
+            printf("Added core to blacklist %d. Blacklisted cores:\n", req_coreid);
+            for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
+                printf("Core: %d\n", *it);
+            }
         }
         
     }
@@ -232,8 +238,11 @@ private:
         //BLISS
         [this] (ReqIter req1, ReqIter req2) {
             //First check if blacklist needs to be cleared according g_num_cycles and reset_time
-            if((g_num_cycles % this->reset_time) == 0){
-                this->blacklist_ids.clear(); 
+            u_int64_t cycle_difference = g_num_cycles - last_cycle;
+            if(cycle_difference > this->reset_time){
+                this->blacklist_ids.clear();
+                last_cycle = g_num_cycles;
+                printf("\nClearing out blacklist.\n"); 
             }
             //Priority 1: Prioritize non-blacklisted
             //Check if either request is blacklisted
