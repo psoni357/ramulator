@@ -55,7 +55,11 @@ Current Row Policies:
 #include <functional>
 #include <cassert>
 #include <set>
-extern uint64_t g_num_cycles; 
+extern uint64_t g_num_cycles;
+extern uint64_t core_0_blacklist_count;
+extern uint64_t core_1_blacklist_count;
+extern uint64_t core_2_blacklist_count;
+extern uint64_t core_3_blacklist_count;
 using namespace std;
 
 namespace ramulator
@@ -181,6 +185,20 @@ private:
             //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
             //(if it's not already blacklisted)
             blacklist_ids.insert(req_coreid);
+
+            if(req_coreid==0){
+                core_0_blacklist_count++;
+            }
+            else if(req_coreid==1){
+                core_1_blacklist_count++;
+            }
+            else if(req_coreid==2){
+                core_2_blacklist_count++;
+            }
+            else if(req_coreid==3){
+                core_3_blacklist_count++;
+            }
+
             //printf("Added core to blacklist %d. Blacklisted cores:\n", req_coreid);
             //for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
             //    printf("Core: %d\n", *it);

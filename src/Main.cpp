@@ -34,6 +34,10 @@ using namespace ramulator;
 
 bool ramulator::warmup_complete = false;
 uint64_t g_num_cycles = 0; //global to store number of cycles processed - for BLISS scheduler refressh
+uint64_t core_0_blacklist_count = 0;
+uint64_t core_1_blacklist_count = 0;
+uint64_t core_2_blacklist_count = 0;
+uint64_t core_3_blacklist_count = 0;
 template<typename T>
 void run_dramtrace(const Config& configs, Memory<T, Controller>& memory, const char* tracename) {
 
@@ -273,6 +277,12 @@ int main(int argc, const char *argv[])
     }
 
     printf("Simulation done. Statistics written to %s\n", stats_out.c_str());
+
+    printf("\nPrinting counts of how many times cores were blacklisted.\n");
+    printf("Core 0: %d\n", core_0_blacklist_count);
+    printf("Core 1: %d\n", core_1_blacklist_count);
+    printf("Core 2: %d\n", core_2_blacklist_count);
+    printf("Core 3: %d\n", core_3_blacklist_count);
 
     return 0;
 }
