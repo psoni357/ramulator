@@ -181,10 +181,10 @@ private:
             //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
             //(if it's not already blacklisted)
             blacklist_ids.insert(req_coreid);
-            printf("Added core to blacklist %d. Blacklisted cores:\n", req_coreid);
-            for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
-                printf("Core: %d\n", *it);
-            }
+            //printf("Added core to blacklist %d. Blacklisted cores:\n", req_coreid);
+            //for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
+            //    printf("Core: %d\n", *it);
+            //}
         }
         
     }
@@ -242,7 +242,7 @@ private:
             if(cycle_difference > this->reset_time){
                 this->blacklist_ids.clear();
                 last_cycle = g_num_cycles;
-                printf("\nClearing out blacklist.\n"); 
+                //printf("\nClearing out blacklist.\n"); 
             }
             //Priority 1: Prioritize non-blacklisted
             //Check if either request is blacklisted
