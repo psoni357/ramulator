@@ -2,7 +2,7 @@
 
 # Compiled Object files
 obj/
-
+cputraces_unpacked/
 # Compiled target executable files
 ramulator
 settings.json
