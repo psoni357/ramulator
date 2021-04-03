@@ -1,5 +1,5 @@
 *.swp
-
+DDR3.stats
 # Compiled Object files
 obj/
 cputraces_unpacked/

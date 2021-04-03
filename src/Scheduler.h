@@ -76,7 +76,7 @@ public:
 
     enum class Type {
         FCFS, FRFCFS, FRFCFS_Cap, FRFCFS_PriorHit, BLISS, MAX
-    } type = Type::BLISS; //Change this line to change scheduling policy
+    } type = Type::FRFCFS; //Change this line to change scheduling policy
 
     long cap = 16; //Change  line to change cap
     //BLISS variables/constants

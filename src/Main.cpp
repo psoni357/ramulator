@@ -278,11 +278,11 @@ int main(int argc, const char *argv[])
 
     printf("Simulation done. Statistics written to %s\n", stats_out.c_str());
 
-    printf("\nPrinting counts of how many times cores were blacklisted.\n");
-    printf("Core 0: %d\n", core_0_blacklist_count);
-    printf("Core 1: %d\n", core_1_blacklist_count);
-    printf("Core 2: %d\n", core_2_blacklist_count);
-    printf("Core 3: %d\n", core_3_blacklist_count);
+    //printf("\nPrinting counts of how many times cores were blacklisted.\n");
+    //printf("Core 0: %d\n", core_0_blacklist_count);
+    //printf("Core 1: %d\n", core_1_blacklist_count);
+    //printf("Core 2: %d\n", core_2_blacklist_count);
+    //printf("Core 3: %d\n", core_3_blacklist_count);
 
     return 0;
 }
