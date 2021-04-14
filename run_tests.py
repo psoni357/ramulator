@@ -57,7 +57,7 @@ if __name__ == '__main__':
             trace_p.wait()
     
     print("All simulations finished, starting processing")
-    exit()
+    
     """2. Process stats in STATS_DIR, creating Pandas dataframe that is then displayed"""
     def get_stat_file_dict(stat_filename):
         # Given a stat file name in format SCHEDULER_NUM_{listOfTests}.txt, output a dict with:
