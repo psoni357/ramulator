@@ -15,7 +15,13 @@ if __name__ == '__main__':
     STATS_DIR = './test_stats'
     TRACE_DIR = './cputraces_unpacked'
     INSTR_RECORD = 200000000 #the value of expected_limit_insts TODO: read this from trace file maybe?
-    GROUP_SIZE = 4
+    GROUP_SIZE = 8 #4
+    TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','astar','zeusmp'],
+                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','soplex','xalancbmk'],
+                   ['libquantum','leslie3d','milc','cactusADM','wrf','bzip2','gcc','namd'],
+                   ['GemsFDTD','lbm','astar','milc','wrf','bzip2','gcc','gobmk']
+                  ]
+    '''
     TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM'],
                    ['GemsFDTD','lbm','astar','milc'],
                    ['libquantum', 'leslie3d', 'milc', 'h264ref'],
@@ -25,6 +31,7 @@ if __name__ == '__main__':
                    ['wrf', 'bzip2', 'gcc', 'astar'],
                    ['wrf', 'bzip2', 'gcc', 'zeusmp']
                     ]
+    '''
     arg_parser = argparse.ArgumentParser(description=None)
     arg_parser.add_argument("--existing", action='store_true')
     arg_parser.add_argument("--scheduler", type=str) #for appending 
