@@ -16,7 +16,9 @@ if __name__ == '__main__':
     TRACE_DIR = './cputraces_unpacked'
     INSTR_RECORD = 200000000 #the value of expected_limit_insts TODO: read this from trace file maybe?
     GROUP_SIZE = 4
-    TEST_GROUPS = [['libquantum', 'leslie3d', 'milc', 'h264ref'],
+    TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM'],
+                   ['GemsFDTD','lbm','astar','milc'],
+                   ['libquantum', 'leslie3d', 'milc', 'h264ref'],
                    ['libquantum', 'leslie3d', 'GemsFDTD', 'h264ref'],
                    ['wrf', 'gcc', 'lbm', 'libquantum'],
                    ['gcc', 'bzip2', 'astar', 'zeusmp'],
@@ -41,7 +43,7 @@ if __name__ == '__main__':
             real_name = trace_file_name.split('.')[1]
             trace_file_dict[real_name] = trace_file_name
         # Start all the trace simulations
-        for test_num, test_group in enumerate(TEST_GROUPS[:6]):# limiting test sets here
+        for test_num, test_group in enumerate(TEST_GROUPS[:2]):# limiting test sets here
             traces_str = ' '.join([f'{TRACE_DIR}/{trace_file_dict[test]}' for test in test_group])
             test_str = '_'.join([f'{test}' for test in test_group])
             if(args.scheduler): 
