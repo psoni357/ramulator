@@ -50,7 +50,7 @@ if __name__ == '__main__':
             real_name = trace_file_name.split('.')[1]
             trace_file_dict[real_name] = trace_file_name
         # Start all the trace simulations
-        for test_num, test_group in enumerate(TEST_GROUPS[:2]):# limiting test sets here
+        for test_num, test_group in enumerate(TEST_GROUPS[:4]):# limiting test sets here
             traces_str = ' '.join([f'{TRACE_DIR}/{trace_file_dict[test]}' for test in test_group])
             test_str = '_'.join([f'{test}' for test in test_group])
             if(args.scheduler): 
