@@ -7,10 +7,11 @@ Usage: python run_tests.py [--existing] [--scheduler scheduler]
 """
 import subprocess #for running ramulator in shell
 import sys
-from os import listdir, makedirs
+from os import listdir, makedirs, path
 import argparse
 from collections import defaultdict
 import pprint
+
 if __name__ == '__main__':
     STATS_DIR = './test_stats'
     TRACE_DIR = './cputraces_unpacked'
@@ -50,7 +51,7 @@ if __name__ == '__main__':
             real_name = trace_file_name.split('.')[1]
             trace_file_dict[real_name] = trace_file_name
         # Start all the trace simulations
-        for test_num, test_group in enumerate(TEST_GROUPS[:4]):# limiting test sets here
+        for test_num, test_group in enumerate(TEST_GROUPS):# limiting test sets here
             traces_str = ' '.join([f'{TRACE_DIR}/{trace_file_dict[test]}' for test in test_group])
             test_str = '_'.join([f'{test}' for test in test_group])
             if(args.scheduler): 
@@ -82,12 +83,13 @@ if __name__ == '__main__':
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
+        pd.set_option("display.max_rows", None, "display.max_columns", None) #let pandas print all rows/columns of dfs
     except ImportError: #no pandas, can't do data processing 
         print("ERROR: No Pandas/matplotlib installation - run 'pip install pandas' and 'pip install matplotlib' if you want to process the trace files")
         exit(1)
     base_stat_names = ['ramulator.record_insts_core', 'ramulator.record_cycs_core'] #stats we are interested in
     stat_names = [ f'{base_stat_name}_{group_num}' for group_num in range(GROUP_SIZE) for base_stat_name in base_stat_names] #make copies of stats, appending core #s
-    trace_stats_files = sorted([file_name for file_name in listdir(STATS_DIR) if ".txt" in file_name]) #don't include .csv file from previous run
+    trace_stats_files = sorted([file_name for file_name in listdir(STATS_DIR) if ".txt" in file_name and path.getsize(f"{STATS_DIR}/{file_name}") != 0]) #don't include .csv file from previous run
     
     #trace_stat_names = [trace_stat.replace('.txt', '').split('_')[1] for trace_stat in trace_stats_files]
     trace_stat_dicts = [] #list of dictionaries, each one holding stats for a matching trace in trace_stats_files
