@@ -16,7 +16,8 @@ if __name__ == '__main__':
     STATS_DIR = './test_stats'
     TRACE_DIR = './cputraces_unpacked'
     INSTR_RECORD = 200000000 #the value of expected_limit_insts TODO: read this from trace file maybe?
-    GROUP_SIZE = 8 #4
+    GROUP_SIZE = 8
+    
     TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','astar','zeusmp'],
                    ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','soplex','xalancbmk'],
                    ['libquantum','leslie3d','milc','cactusADM','wrf','bzip2','gcc','namd'],

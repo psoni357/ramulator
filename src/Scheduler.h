@@ -76,7 +76,7 @@ public:
 
     enum class Type {
         FCFS, FRFCFS, FRFCFS_Cap, FRFCFS_PriorHit, BLISS, MAX
-    } type = Type::FRFCFS_Cap; //Change this line to change scheduling policy
+    } type = Type::BLISS; //Change this line to change scheduling policy
 
     long cap = 16; //Change  line to change cap
     //BLISS variables/constants
@@ -181,7 +181,7 @@ private:
         }
 
         //check if have to blacklist according to blacklist_thresh
-        if(num_consec_reqs > blacklist_thresh && g_num_cycles!=0){
+        /*if(num_consec_reqs > blacklist_thresh && g_num_cycles!=0){
             //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
             //(if it's not already blacklisted)
             blacklist_ids.insert(req_coreid);
@@ -203,7 +203,7 @@ private:
             //for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
             //    printf("Core: %d\n", *it);
             //}
-        }
+        }*/
         
     }
     typedef list<Request>::iterator ReqIter;
@@ -264,8 +264,8 @@ private:
             }
             //Priority 1: Prioritize non-blacklisted
             //Check if either request is blacklisted
-            bool req1_blacklisted = (this->blacklist_ids.count(req1->coreid) != 0);
-            bool req2_blacklisted = (this->blacklist_ids.count(req2->coreid) != 0);
+            bool req1_blacklisted = (this->blacklist_ids.count(req1->coreid) != 0) && this->ctrl->is_ready(req1);
+            bool req2_blacklisted = (this->blacklist_ids.count(req2->coreid) != 0) && this->ctrl->is_ready(req2);
             
             if(req1_blacklisted ^ req2_blacklisted){
                 if(req1_blacklisted){
@@ -278,8 +278,8 @@ private:
                 }
             }
             //Priority 2: Prioritize row-hit over non-hit
-            bool req1_row_hit = this->ctrl->is_row_hit(req1);
-            bool req2_row_hit = this->ctrl->is_row_hit(req2);
+            bool req1_row_hit = this->ctrl->is_row_hit(req1) && this->ctrl->is_ready(req1);
+            bool req2_row_hit = this->ctrl->is_row_hit(req2) && this->ctrl->is_ready(req2);
 
             if(req1_row_hit ^ req2_row_hit){
                 if(req1_row_hit){
