@@ -11,7 +11,7 @@ from os import listdir, makedirs, path
 import argparse
 from collections import defaultdict
 import pprint
-
+import glob
 if __name__ == '__main__':
     STATS_DIR = './test_stats'
     TRACE_DIR = './cputraces_unpacked'
@@ -36,7 +36,9 @@ if __name__ == '__main__':
     '''
     arg_parser = argparse.ArgumentParser(description=None)
     arg_parser.add_argument("--existing", action='store_true')
-    arg_parser.add_argument("--scheduler", type=str) #for appending 
+    arg_parser.add_argument("--scheduler", type=str) #for appending to trace statistics name
+    arg_parser.add_argument("--pivot", action='store_true')     #output a dataframe omitting specific test applications, only showing policy, test number, and core IPC values
+    arg_parser.add_argument("--recursive", action='store_true') #go through all directories in STATS_DIR when looking for traces DOES NOT REALLY WORK SO LONG AS TRACE FILES START WITH SAME POLICY NAME
     args = arg_parser.parse_args()
 
     try:
@@ -67,8 +69,8 @@ if __name__ == '__main__':
         for trace_p in trace_procs:
             trace_p.wait()
     
-    print("All simulations finished, starting processing")
-    
+        print("All simulations finished")
+    print("Starting Processing")
     """2. Process stats in STATS_DIR, creating Pandas dataframe that is then displayed"""
     def get_stat_file_dict(stat_filename):
         # Given a stat file name in format SCHEDULER_NUM_{listOfTests}.txt, output a dict with:
@@ -90,12 +92,23 @@ if __name__ == '__main__':
         exit(1)
     base_stat_names = ['ramulator.record_insts_core', 'ramulator.record_cycs_core'] #stats we are interested in
     stat_names = [ f'{base_stat_name}_{group_num}' for group_num in range(GROUP_SIZE) for base_stat_name in base_stat_names] #make copies of stats, appending core #s
-    trace_stats_files = sorted([file_name for file_name in listdir(STATS_DIR) if ".txt" in file_name and path.getsize(f"{STATS_DIR}/{file_name}") != 0]) #don't include .csv file from previous run
-    
+    #trace_stats_files = sorted([file_name for file_name in listdir(STATS_DIR) if ".txt" in file_name and path.getsize(f"{STATS_DIR}/{file_name}") != 0]) #don't include .csv file from previous run
+    if(not args.recursive):
+        trace_stats_files = glob.glob(f"{STATS_DIR}/*.txt")
+    else: 
+        trace_stats_files = glob.glob(f"{STATS_DIR}/**/*.txt", recursive=True)
+    if(len(trace_stats_files) == 0):
+        print(f"ERROR: No trace stats found in {STATS_DIR} with --recursive set to {args.recursive}")
+        exit(1)
+    trace_stats_files = [file_path for file_path in trace_stats_files if path.getsize(file_path) != 0] #remove empty traces
+    if(len(trace_stats_files) == 0):
+        print(f"ERROR: All traces found in {STATS_DIR} with were empty with --recursive set to {args.recursive}")
+        exit(1)
+    pprint.pprint(trace_stats_files)
     #trace_stat_names = [trace_stat.replace('.txt', '').split('_')[1] for trace_stat in trace_stats_files]
     trace_stat_dicts = [] #list of dictionaries, each one holding stats for a matching trace in trace_stats_files
-    for trace_stat_f in trace_stats_files:
-        trace_path = f"{STATS_DIR}/{trace_stat_f}"
+    for trace_path in trace_stats_files:
+        trace_stat_f = path.basename(trace_path)
         trace_stats_dict = get_stat_file_dict(trace_stat_f)
         for line in open(trace_path, 'r'):
             stat_name, stat_val = line.split()[0], float(line.split()[1])
@@ -110,15 +123,27 @@ if __name__ == '__main__':
             coreid = int(stat_name.split('_')[2])
             app = stat_dict['apps'][coreid]
             stat_name_no_num = '_'.join(stat_name.split('_')[:-1])
+            stat_dict['apps_results'][app]["scheduler"] = stat_dict['scheduler']
+            stat_dict['apps_results'][app]["core"] = f"Core {coreid}"
             stat_dict['apps_results'][app][stat_name_no_num] = stat_val
-    schedulers = [(stat_dict['scheduler'], stat_dict['test_num']) for stat_dict in trace_stat_dicts]
+            
+            stat_dict['apps_results'][app]["test_num"] = stat_dict['test_num']
+            
+    #schedulers = [(stat_dict['scheduler']) for stat_dict in trace_stat_dicts]
     trace_stat_dfs = [pd.DataFrame(stat_dict['apps_results']).transpose() for stat_dict in trace_stat_dicts]
-    
     for trace_stat_df in trace_stat_dfs:
         trace_stat_df['IPC'] = trace_stat_df['insts_core']/trace_stat_df['cycs_core']
-    trace_stat_df = pd.concat(trace_stat_dfs, keys = schedulers)
+    trace_stat_df = pd.concat(trace_stat_dfs)
+    if(args.pivot):
+        #trace_stat_df
+        #trace_stat_df = trace_stat_df[['IPC']]
+        #print(trace_stat_df.head(20))
+        #trace_stat_df = trace_stat_df.unstack(level = 1)
+        #trace_stat_df = trace_stat_df.drop(['cycs_core', 'insts_core'], axis=1)
+        trace_stat_df = trace_stat_df.pivot(index=['scheduler','test_num'], columns = ['core'], values=['IPC'])
+        
+        #trace_stat_df = trace_stat_df.unstack(level=["Policy"])
     print(trace_stat_df.head(200))
-    
     """
     #plot output IPC
     trace_stat_df[['IPC']].sort_index(key = lambda v : v.str.lower()).plot.bar()
