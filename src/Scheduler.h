@@ -181,12 +181,12 @@ private:
         }
 
         //check if have to blacklist according to blacklist_thresh
-        /*if(num_consec_reqs > blacklist_thresh && g_num_cycles!=0){
+        if(num_consec_reqs > blacklist_thresh && g_num_cycles!=0){
             //last_req_id had more than blacklist_thresh consecutive requests --> blacklist it
             //(if it's not already blacklisted)
             blacklist_ids.insert(req_coreid);
 
-            if(req_coreid==0){
+            /*if(req_coreid==0){
                 core_0_blacklist_count++;
             }
             else if(req_coreid==1){
@@ -197,13 +197,13 @@ private:
             }
             else if(req_coreid==3){
                 core_3_blacklist_count++;
-            }
+            }*/
 
             //printf("Added core to blacklist %d. Blacklisted cores:\n", req_coreid);
             //for(std::set<int>::iterator it=blacklist_ids.begin(); it!=blacklist_ids.end(); ++it){
             //    printf("Core: %d\n", *it);
             //}
-        }*/
+        }
         
     }
     typedef list<Request>::iterator ReqIter;
