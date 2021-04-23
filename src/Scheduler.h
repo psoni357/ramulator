@@ -264,8 +264,8 @@ private:
             }
             //Priority 1: Prioritize non-blacklisted
             //Check if either request is blacklisted
-            bool req1_blacklisted = (this->blacklist_ids.count(req1->coreid) != 0) && this->ctrl->is_ready(req1);
-            bool req2_blacklisted = (this->blacklist_ids.count(req2->coreid) != 0) && this->ctrl->is_ready(req2);
+            bool req1_blacklisted = (this->blacklist_ids.count(req1->coreid) != 0);
+            bool req2_blacklisted = (this->blacklist_ids.count(req2->coreid) != 0);
             
             if(req1_blacklisted ^ req2_blacklisted){
                 if(req1_blacklisted){
