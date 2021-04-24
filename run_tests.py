@@ -17,14 +17,8 @@ if __name__ == '__main__':
     TRACE_DIR = './cputraces_unpacked'
     INSTR_RECORD = 200000000 #the value of expected_limit_insts TODO: read this from trace file maybe?
     GROUP_SIZE = 8
-    
-    TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','astar','zeusmp'],
-                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','soplex','xalancbmk'],
-                   ['libquantum','leslie3d','milc','cactusADM','wrf','bzip2','gcc','namd'],
-                   ['GemsFDTD','lbm','astar','milc','wrf','bzip2','gcc','gobmk']
-                  ]
-    '''
-    TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM'],
+    TEST_GROUPS_4_CORE = [
+                   ['libquantum','leslie3d','milc','cactusADM'],
                    ['GemsFDTD','lbm','astar','milc'],
                    ['libquantum', 'leslie3d', 'milc', 'h264ref'],
                    ['libquantum', 'leslie3d', 'GemsFDTD', 'h264ref'],
@@ -32,15 +26,33 @@ if __name__ == '__main__':
                    ['gcc', 'bzip2', 'astar', 'zeusmp'],
                    ['wrf', 'bzip2', 'gcc', 'astar'],
                    ['wrf', 'bzip2', 'gcc', 'zeusmp']
-                    ]
-    '''
+                ]
+    TEST_GROUPS_8_CORE = [
+                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','astar','zeusmp'],
+                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','soplex','xalancbmk'],
+                   ['libquantum','leslie3d','milc','cactusADM','wrf','bzip2','gcc','namd'],
+                   ['GemsFDTD','lbm','astar','milc','wrf','bzip2','gcc','gobmk']
+                   ]
+    TEST_GROUPS = []
+    TEST_GROUPS.extend(TEST_GROUPS_4_CORE)
+    TEST_GROUPS.extend(TEST_GROUPS_8_CORE)
+
     arg_parser = argparse.ArgumentParser(description=None)
     arg_parser.add_argument("--existing", action='store_true')
     arg_parser.add_argument("--scheduler", type=str) #for appending to trace statistics name
     arg_parser.add_argument("--pivot", action='store_true')     #output a dataframe omitting specific test applications, only showing policy, test number, and core IPC values
     arg_parser.add_argument("--recursive", action='store_true') #go through all directories in STATS_DIR when looking for traces DOES NOT REALLY WORK SO LONG AS TRACE FILES START WITH SAME POLICY NAME
+    arg_parser.add_argument("--only_8_core", action='store_true') #only run the tests in TEST_GROUPS_8_CORE
+    arg_parser.add_argument("--only_4_core", action='store_true') #only run the tests in TEST_GROUPS_4_CORE
     args = arg_parser.parse_args()
 
+    if(args.only_8_core):
+        blacklisted_tests = [num for num in range(len(TEST_GROUPS_4_CORE))]
+    elif(args.only_4_core):
+        blacklisted_tests = [num for num in range(len(TEST_GROUPS_4_CORE), len(TEST_GROUPS))]
+    else:
+        blacklisted_tests = []
+    print(f"Skipping tests {blacklisted_tests}!!")
     try:
         makedirs(STATS_DIR) #make the output directory if it isn't there
     except FileExistsError:
@@ -55,6 +67,8 @@ if __name__ == '__main__':
             trace_file_dict[real_name] = trace_file_name
         # Start all the trace simulations
         for test_num, test_group in enumerate(TEST_GROUPS):# limiting test sets here
+            if(test_num in blacklisted_tests): 
+                continue
             traces_str = ' '.join([f'{TRACE_DIR}/{trace_file_dict[test]}' for test in test_group])
             test_str = '_'.join([f'{test}' for test in test_group])
             if(args.scheduler): 

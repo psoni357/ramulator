@@ -12,10 +12,22 @@ from os import listdir, makedirs
 import argparse
 
 if __name__ == '__main__':
-    BASE_STATS_DIR = './base_stats'
+    BASE_STATS_DIR = './base_stats_8channel'
     TRACE_DIR = './cputraces_unpacked'
     INSTR_RECORD = 200000000 #the value of expected_limit_insts TODO: read this from trace file maybe?
-
+    TEST_GROUPS = [['libquantum','leslie3d','milc','cactusADM'],
+                   ['GemsFDTD','lbm','astar','milc'],
+                   ['libquantum', 'leslie3d', 'milc', 'h264ref'],
+                   ['libquantum', 'leslie3d', 'GemsFDTD', 'h264ref'],
+                   ['wrf', 'gcc', 'lbm', 'libquantum'],
+                   ['gcc', 'bzip2', 'astar', 'zeusmp'],
+                   ['wrf', 'bzip2', 'gcc', 'astar'],
+                   ['wrf', 'bzip2', 'gcc', 'zeusmp'],
+                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','astar','zeusmp'],
+                   ['libquantum','leslie3d','milc','cactusADM','GemsFDTD','lbm','soplex','xalancbmk'],
+                   ['libquantum','leslie3d','milc','cactusADM','wrf','bzip2','gcc','namd'],
+                   ['GemsFDTD','lbm','astar','milc','wrf','bzip2','gcc','gobmk']
+                    ]
     arg_parser = argparse.ArgumentParser(description=None)
     arg_parser.add_argument("--existing", action='store_true')
     args = arg_parser.parse_args()
@@ -63,6 +75,7 @@ if __name__ == '__main__':
             if(stat_name in stat_names): #if it's a stat we are interested in, save it (remove the ramulator part)
                 field = stat_name.replace('ramulator.', '').replace('record_', '')
                 trace_stats_dict[field] = stat_val
+        
         trace_stat_dicts.append(trace_stats_dict)
     
     trace_stat_df = pd.DataFrame(trace_stat_dicts, index = trace_stat_names)
@@ -72,6 +85,8 @@ if __name__ == '__main__':
     trace_stat_df['MPKI'] = trace_stat_df['L3_cache_total_miss']/((INSTR_RECORD)/1000)
     trace_stat_df['IPC'] = trace_stat_df['insts_core_0']/trace_stat_df['cycs_core_0']
     #trace_stat_df['MPKI w/ Conflict'] = (trace_stat_df['total_misses'] + trace_stat_df['total_conflicts']) /((INSTR_RECORD)/1000)
+    trace_stat_df.index = trace_stat_df.index.rename("app")
+    print("Individual App Statistics")
     print(trace_stat_df.head(200))
 
     #plot output MPKI
@@ -86,7 +101,22 @@ if __name__ == '__main__':
     plt.savefig(f"{BASE_STATS_DIR}/IPC_plot.png", dpi = 400, bbox_inches='tight')
 
     #save entire dataframe as CSV
-    out_path = f"{BASE_STATS_DIR}/hit_stats.csv"
-    print(f"Saving dataframe as CSV at {out_path}")
+    out_path = f"{BASE_STATS_DIR}/hit_stats_individual.csv"
+    print(f"Saving individual app data dataframe as CSV at {out_path}")
     trace_stat_df.to_csv(out_path)
-
+    trace_stat_groups_strs = [" | ".join(group) for group in TEST_GROUPS]
+    trace_stat_group_dict = {}
+    for group_num, group_apps in enumerate(TEST_GROUPS):
+        group_str = trace_stat_groups_strs[group_num]
+        trace_stat_group_dict[group_str] = []
+        for group_app in group_apps:
+            trace_stat_group_dict[group_str].append(float(trace_stat_df[trace_stat_df.index == group_app]['IPC']))
+    
+    trace_stat_group_df = pd.DataFrame.from_dict(trace_stat_group_dict, orient='index')
+    core_names_map ={num:f"Core {num}" for num in trace_stat_group_df.columns}
+    trace_stat_group_df = trace_stat_group_df.rename(columns=core_names_map)
+    print("IPC Statistics by test group")
+    print(trace_stat_group_df.head(2000))
+    out_path = f"{BASE_STATS_DIR}/hit_stats_groups.csv"
+    print(f"Saving test group statistics as CSV at {out_path}")
+    trace_stat_group_df.to_csv(out_path)
