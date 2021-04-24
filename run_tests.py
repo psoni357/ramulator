@@ -38,12 +38,12 @@ if __name__ == '__main__':
     TEST_GROUPS.extend(TEST_GROUPS_8_CORE)
 
     arg_parser = argparse.ArgumentParser(description=None)
-    arg_parser.add_argument("--existing", action='store_true')
-    arg_parser.add_argument("--scheduler", type=str) #for appending to trace statistics name
-    arg_parser.add_argument("--pivot", action='store_true')     #output a dataframe omitting specific test applications, only showing policy, test number, and core IPC values
-    arg_parser.add_argument("--recursive", action='store_true') #go through all directories in STATS_DIR when looking for traces DOES NOT REALLY WORK SO LONG AS TRACE FILES START WITH SAME POLICY NAME
-    arg_parser.add_argument("--only_8_core", action='store_true') #only run the tests in TEST_GROUPS_8_CORE
-    arg_parser.add_argument("--only_4_core", action='store_true') #only run the tests in TEST_GROUPS_4_CORE
+    arg_parser.add_argument("--existing", action='store_true', help= "don't run new tests, process old ones in STATS_DIR instead") #
+    arg_parser.add_argument("--scheduler", type=str, help = "for appending to trace statistics name") 
+    arg_parser.add_argument("--pivot", action='store_true', help = "output a dataframe omitting specific test applications, only showing policy, test number, and core IPC values")    
+    arg_parser.add_argument("--recursive", action='store_true', help = "go through all directories in STATS_DIR when looking for traces DOES NOT REALLY WORK SO LONG AS TRACE FILES START WITH SAME POLICY NAME") #
+    arg_parser.add_argument("--only_8_core", action='store_true', help = "only run the tests in TEST_GROUPS_8_CORE") #
+    arg_parser.add_argument("--only_4_core", action='store_true', help = "only run the tests in TEST_GROUPS_4_CORE")
     args = arg_parser.parse_args()
 
     if(args.only_8_core):
