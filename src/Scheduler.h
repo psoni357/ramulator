@@ -278,8 +278,8 @@ private:
                 }
             }
             //Priority 2: Prioritize row-hit over non-hit
-            bool req1_row_hit = this->ctrl->is_row_hit(req1) && this->ctrl->is_ready(req1);
-            bool req2_row_hit = this->ctrl->is_row_hit(req2) && this->ctrl->is_ready(req2);
+            bool req1_row_hit = this->ctrl->is_row_hit(req1);
+            bool req2_row_hit = this->ctrl->is_row_hit(req2);
 
             if(req1_row_hit ^ req2_row_hit){
                 if(req1_row_hit){
